@@ -1,0 +1,6 @@
+{
+    "name": "greg-1-anderson/drupal-scaffold-assets",
+    "type": "metapackage",
+    "description": "Scaffold assets from drupal/drupal",
+    "license": "GPL-2.0-or-later"
+}
