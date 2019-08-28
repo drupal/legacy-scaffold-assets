@@ -1,0 +1,13 @@
+{
+    "name": "drupal/legacy-scaffold-assets",
+    "type": "library",
+    "description": "Scaffold assets from drupal/drupal",
+    "license": "GPL-2.0-or-later",
+    "extra": {
+        "composer-scaffold": {
+            "allowed-packages": [
+                "drupal/core"
+            ]
+        }
+    }
+}
