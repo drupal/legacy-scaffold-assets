@@ -6,6 +6,7 @@
     "extra": {
         "composer-scaffold": {
             "file-mapping": {
+                "[web-root]/.csslintrc": "assets/csslintrc",
                 "[web-root]/.editorconfig": "assets/editorconfig",
                 "[web-root]/.eslintignore": "assets/eslintignore",
                 "[web-root]/.gitattributes": "assets/gitattributes",
@@ -14,8 +15,10 @@
                 "[web-root]/index.php": "assets/index.php",
                 "[web-root]/robots.txt": "assets/robots.txt",
                 "[web-root]/web.config": "assets/web.config",
+                "[web-root]/sites/default/default.services.yml": "assets/default.services.yml",
                 "[web-root]/sites/default/default.settings.php": "assets/default.settings.php",
                 "[web-root]/sites/example.settings.local.php": "assets/example.settings.local.php",
+                "[web-root]/sites/development.services.yml": "assets/development.services.yml",
                 "[web-root]/sites/example.sites.php": "assets/example.sites.php",
                 "[web-root]/modules/README.txt": "assets/modules.README.txt",
                 "[web-root]/profiles/README.txt": "assets/profiles.README.txt",
