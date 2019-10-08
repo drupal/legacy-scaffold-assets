@@ -22,7 +22,7 @@
  * 'sites/default' will be used.
  *
  * For example, for a fictitious site installed at
- * https://www.drupal.org:8080/mysite/test/, the 'settings.php' file is searched
+ * http://www.drupal.org:8080/mysite/test/, the 'settings.php' file is searched
  * for in the following directories:
  *
  * - sites/8080.www.drupal.org.mysite.test
@@ -44,11 +44,11 @@
  *
  * Note that if you are installing on a non-standard port number, prefix the
  * hostname with that number. For example,
- * https://www.drupal.org:8080/mysite/test/ could be loaded from
+ * http://www.drupal.org:8080/mysite/test/ could be loaded from
  * sites/8080.www.drupal.org.mysite.test/.
  *
  * @see example.sites.php
- * @see \Drupal\Core\DrupalKernel::getSitePath()
+ * @see conf_path()
  *
  * In addition to customizing application settings through variables in
  * settings.php, you can create a services.yml file in the same directory to
@@ -64,36 +64,20 @@
  * to multiple databases, including multiple types of databases,
  * during the same request.
  *
- * One example of the simplest connection array is shown below. To use the
- * sample settings, copy and uncomment the code below between the @code and
- * @endcode lines and paste it after the $databases declaration. You will need
- * to replace the database username and password and possibly the host and port
- * with the appropriate credentials for your database system.
- *
- * The next section describes how to customize the $databases array for more
- * specific needs.
- *
+ * Each database connection is specified as an array of settings,
+ * similar to the following:
  * @code
- * $databases['default']['default'] = array (
- *   'database' => 'databasename',
- *   'username' => 'sqlusername',
- *   'password' => 'sqlpassword',
- *   'host' => 'localhost',
- *   'port' => '3306',
+ * array(
  *   'driver' => 'mysql',
- *   'prefix' => '',
- *   'collation' => 'utf8mb4_general_ci',
+ *   'database' => 'databasename',
+ *   'username' => 'username',
+ *   'password' => 'password',
+ *   'host' => 'localhost',
+ *   'port' => 3306,
+ *   'prefix' => 'myprefix_',
+ *   'collation' => 'utf8_general_ci',
  * );
  * @endcode
- */
- $databases = array();
-
-/**
- * Customizing database settings.
- *
- * Many of the values of the $databases array can be customized for your
- * particular database system. Refer to the sample in the section above as a
- * starting point.
  *
  * The "driver" property indicates what Drupal database driver the
  * connection should use.  This is usually the same as the name of the
@@ -133,6 +117,19 @@
  * of potential replica databases.  Drupal will select one at random for a given
  * request as needed.  The fourth line creates a new database with a name of
  * "extra".
+ *
+ * For a single database configuration, the following is sufficient:
+ * @code
+ * $databases['default']['default'] = array(
+ *   'driver' => 'mysql',
+ *   'database' => 'databasename',
+ *   'username' => 'username',
+ *   'password' => 'password',
+ *   'host' => 'localhost',
+ *   'prefix' => 'main_',
+ *   'collation' => 'utf8_general_ci',
+ * );
+ * @endcode
  *
  * You can optionally set prefixes for some or all database table names
  * by using the 'prefix' setting. If a prefix is specified, the table
@@ -177,6 +174,7 @@
  * connecting to the database server, as well as PDO connection settings. For
  * example, to enable MySQL SELECT queries to exceed the max_join_size system
  * variable, and to reduce the database connection timeout to 5 seconds:
+ *
  * @code
  * $databases['default']['default'] = array(
  *   'init_commands' => array(
@@ -188,59 +186,60 @@
  * );
  * @endcode
  *
- * WARNING: The above defaults are designed for database portability. Changing
- * them may cause unexpected behavior, including potential data loss. See
- * https://www.drupal.org/developing/api/database/configuration for more
- * information on these defaults and the potential issues.
+ * WARNING: These defaults are designed for database portability. Changing them
+ * may cause unexpected behavior, including potential data loss.
  *
- * More details can be found in the constructor methods for each driver:
- * - \Drupal\Core\Database\Driver\mysql\Connection::__construct()
- * - \Drupal\Core\Database\Driver\pgsql\Connection::__construct()
- * - \Drupal\Core\Database\Driver\sqlite\Connection::__construct()
+ * @see DatabaseConnection_mysql::__construct
+ * @see DatabaseConnection_pgsql::__construct
+ * @see DatabaseConnection_sqlite::__construct
  *
- * Sample Database configuration format for PostgreSQL (pgsql):
+ * Database configuration format:
  * @code
  *   $databases['default']['default'] = array(
- *     'driver' => 'pgsql',
+ *     'driver' => 'mysql',
  *     'database' => 'databasename',
- *     'username' => 'sqlusername',
- *     'password' => 'sqlpassword',
+ *     'username' => 'username',
+ *     'password' => 'password',
  *     'host' => 'localhost',
  *     'prefix' => '',
  *   );
- * @endcode
- *
- * Sample Database configuration format for SQLite (sqlite):
- * @code
+ *   $databases['default']['default'] = array(
+ *     'driver' => 'pgsql',
+ *     'database' => 'databasename',
+ *     'username' => 'username',
+ *     'password' => 'password',
+ *     'host' => 'localhost',
+ *     'prefix' => '',
+ *   );
  *   $databases['default']['default'] = array(
  *     'driver' => 'sqlite',
  *     'database' => '/path/to/databasefilename',
  *   );
  * @endcode
  */
+$databases = array();
 
 /**
  * Location of the site configuration files.
  *
  * The $config_directories array specifies the location of file system
- * directories used for configuration data. On install, the "sync" directory is
- * created. This is used for configuration imports. The "active" directory is
- * not created by default since the default storage for active configuration is
- * the database rather than the file system. (This can be changed. See "Active
- * configuration settings" below).
+ * directories used for configuration data. On install, "active" and "staging"
+ * directories are created for configuration. The staging directory is used for
+ * configuration imports; the active directory is not used by default, since the
+ * default storage for active configuration is the database rather than the file
+ * system (this can be changed; see "Active configuration settings" below).
  *
- * The default location for the "sync" directory is inside a randomly-named
- * directory in the public files path. The setting below allows you to override
- * the "sync" location.
- *
- * If you use files for the "active" configuration, you can tell the
- * Configuration system where this directory is located by adding an entry with
- * array key CONFIG_ACTIVE_DIRECTORY.
+ * The default location for the active and staging directories is inside a
+ * randomly-named directory in the public files path; this setting allows you to
+ * override these locations. If you use files for the active configuration, you
+ * can enhance security by putting the active configuration outside your
+ * document root.
  *
  * Example:
  * @code
  *   $config_directories = array(
- *     CONFIG_SYNC_DIRECTORY => '/directory/outside/webroot',
+ *     CONFIG_ACTIVE_DIRECTORY => '/some/directory/outside/webroot',
+ *     CONFIG_STAGING_DIRECTORY => '/another/directory/outside/webroot',
  *   );
  * @endcode
  */
@@ -251,22 +250,10 @@ $config_directories = array();
  *
  * $settings contains environment-specific configuration, such as the files
  * directory and reverse proxy address, and temporary configuration, such as
- * security overrides.
+ * turning on Twig debugging and security overrides.
  *
  * @see \Drupal\Core\Site\Settings::get()
  */
-
-/**
- * The active installation profile.
- *
- * Changing this after installation is not recommended as it changes which
- * directories are scanned during extension discovery. If this is set prior to
- * installation this value will be rewritten according to the profile selected
- * by the user.
- *
- * @see install_select_profile()
- */
-# $settings['install_profile'] = '';
 
 /**
  * Salt for one-time login links, cancel links, form tokens, etc.
@@ -288,16 +275,6 @@ $config_directories = array();
 $settings['hash_salt'] = '';
 
 /**
- * Deployment identifier.
- *
- * Drupal's dependency injection container will be automatically invalidated and
- * rebuilt when the Drupal core version changes. When updating contributed or
- * custom code that changes the container, changing this identifier will also
- * allow the container to be invalidated as soon as code is deployed.
- */
-# $settings['deployment_identifier'] = \Drupal::VERSION;
-
-/**
  * Access control for update.php script.
  *
  * If you are updating your Drupal installation using the update.php script but
@@ -313,25 +290,20 @@ $settings['update_free_access'] = FALSE;
 /**
  * External access proxy settings:
  *
- * If your site must access the Internet via a web proxy then you can enter the
- * proxy settings here. Set the full URL of the proxy, including the port, in
- * variables:
- * - $settings['http_client_config']['proxy']['http']: The proxy URL for HTTP
- *   requests.
- * - $settings['http_client_config']['proxy']['https']: The proxy URL for HTTPS
- *   requests.
- * You can pass in the user name and password for basic authentication in the
- * URLs in these settings.
- *
- * You can also define an array of host names that can be accessed directly,
- * bypassing the proxy, in $settings['http_client_config']['proxy']['no'].
- *
- * If these settings are not configured, the system environment variables
- * HTTP_PROXY, HTTPS_PROXY, and NO_PROXY on the web server will be used instead.
+ * If your site must access the Internet via a web proxy then you can enter
+ * the proxy settings here. Currently only basic authentication is supported
+ * by using the username and password variables. The proxy_user_agent variable
+ * can be set to NULL for proxies that require no User-Agent header or to a
+ * non-empty string for proxies that limit requests to a specific agent. The
+ * proxy_exceptions variable is an array of host names to be accessed directly,
+ * not via proxy.
  */
-# $settings['http_client_config']['proxy']['http'] = 'http://proxy_user:proxy_pass@example.com:8080';
-# $settings['http_client_config']['proxy']['https'] = 'http://proxy_user:proxy_pass@example.com:8080';
-# $settings['http_client_config']['proxy']['no'] = ['127.0.0.1', 'localhost'];
+# $settings['proxy_server'] = '';
+# $settings['proxy_port'] = 8080;
+# $settings['proxy_username'] = '';
+# $settings['proxy_password'] = '';
+# $settings['proxy_user_agent'] = '';
+# $settings['proxy_exceptions'] = array('127.0.0.1', 'localhost');
 
 /**
  * Reverse Proxy Configuration:
@@ -376,31 +348,7 @@ $settings['update_free_access'] = FALSE;
  * Set this value if your proxy server sends the client IP in a header
  * other than X-Forwarded-For.
  */
-# $settings['reverse_proxy_header'] = 'X_CLUSTER_CLIENT_IP';
-
-/**
- * Set this value if your proxy server sends the client protocol in a header
- * other than X-Forwarded-Proto.
- */
-# $settings['reverse_proxy_proto_header'] = 'X_FORWARDED_PROTO';
-
-/**
- * Set this value if your proxy server sends the client protocol in a header
- * other than X-Forwarded-Host.
- */
-# $settings['reverse_proxy_host_header'] = 'X_FORWARDED_HOST';
-
-/**
- * Set this value if your proxy server sends the client protocol in a header
- * other than X-Forwarded-Port.
- */
-# $settings['reverse_proxy_port_header'] = 'X_FORWARDED_PORT';
-
-/**
- * Set this value if your proxy server sends the client protocol in a header
- * other than Forwarded.
- */
-# $settings['reverse_proxy_forwarded_header'] = 'FORWARDED';
+# $settings['reverse_proxy_header'] = 'HTTP_X_CLUSTER_CLIENT_IP';
 
 /**
  * Page caching:
@@ -423,34 +371,17 @@ $settings['update_free_access'] = FALSE;
 /**
  * Class Loader.
  *
- * If the APC extension is detected, the Symfony APC class loader is used for
- * performance reasons. Detection can be prevented by setting
- * class_loader_auto_detect to false, as in the example below.
- */
-# $settings['class_loader_auto_detect'] = FALSE;
-
-/*
- * If the APC extension is not detected, either because APC is missing or
- * because auto-detection has been disabled, auto-loading falls back to
- * Composer's ClassLoader, which is good for development as it does not break
- * when code is moved in the file system. You can also decorate the base class
- * loader with another cached solution than the Symfony APC class loader, as
- * all production sites should have a cached class loader of some sort enabled.
+ * By default, Drupal uses Composer's ClassLoader, which is best for
+ * development, as it does not break when code is moved on the file
+ * system. It is possible, however, to wrap the class loader with a
+ * cached class loader solution for better performance, which is
+ * recommended for production sites.
  *
- * To do so, you may decorate and replace the local $class_loader variable. For
- * example, to use Symfony's APC class loader without automatic detection,
- * uncomment the code below.
+ * Examples:
+ *   $settings['class_loader'] = 'apc';
+ *   $settings['class_loader'] = 'default';
  */
-/*
-if ($settings['hash_salt']) {
-  $prefix = 'drupal.' . hash('sha256', 'drupal.' . $settings['hash_salt']);
-  $apc_loader = new \Symfony\Component\ClassLoader\ApcClassLoader($prefix, $class_loader);
-  unset($prefix);
-  $class_loader->unregister();
-  $apc_loader->register();
-  $class_loader = $apc_loader;
-}
-*/
+# $settings['class_loader'] = 'apc';
 
 /**
  * Authorized file system operations:
@@ -470,32 +401,27 @@ if ($settings['hash_salt']) {
  * the code directly via SSH or FTP themselves. This setting completely
  * disables all functionality related to these authorized file operations.
  *
- * @see https://www.drupal.org/node/244924
+ * @see http://drupal.org/node/244924
  *
  * Remove the leading hash signs to disable.
  */
 # $settings['allow_authorize_operations'] = FALSE;
 
 /**
- * Default mode for directories and files written by Drupal.
+ * Mixed-mode sessions:
+ *
+ * Set to TRUE to create both secure and insecure sessions when using HTTPS.
+ * Defaults to FALSE.
+ */
+# $settings['mixed_mode_sessions'] = TRUE;
+
+/**
+ * Default mode for for directories and files written by Drupal.
  *
  * Value should be in PHP Octal Notation, with leading zero.
  */
 # $settings['file_chmod_directory'] = 0775;
 # $settings['file_chmod_file'] = 0664;
-
-/**
- * Public file base URL:
- *
- * An alternative base URL to be used for serving public files. This must
- * include any leading directory path.
- *
- * A different value from the domain used by Drupal to be used for accessing
- * public files. This can be used for a simple CDN integration, or to improve
- * security by serving user-uploaded files from a different domain or subdomain
- * pointing to the same server. Do not include a trailing slash.
- */
-# $settings['file_public_base_url'] = 'http://downloads.example.com/files';
 
 /**
  * Public file path:
@@ -505,21 +431,6 @@ if ($settings['hash_salt']) {
  * the Drupal installation directory and be accessible over the web.
  */
 # $settings['file_public_path'] = 'sites/default/files';
-
-/**
- * Private file path:
- *
- * A local file system path where private files will be stored. This directory
- * must be absolute, outside of the Drupal installation directory and not
- * accessible over the web.
- *
- * Note: Caches need to be cleared when this value is changed to make the
- * private:// stream wrapper available to the system.
- *
- * See https://www.drupal.org/documentation/modules/file for more information
- * about securing private files.
- */
-# $settings['file_private_path'] = '';
 
 /**
  * Session write interval:
@@ -559,6 +470,28 @@ if ($settings['hash_salt']) {
 # $settings['maintenance_theme'] = 'bartik';
 
 /**
+ * Base URL (optional).
+ *
+ * If Drupal is generating incorrect URLs on your site, which could
+ * be in HTML headers (links to CSS and JS files) or visible links on pages
+ * (such as in menus), uncomment the Base URL statement below (remove the
+ * leading hash sign) and fill in the absolute URL to your Drupal installation.
+ *
+ * You might also want to force users to use a given domain.
+ * See the .htaccess file for more information.
+ *
+ * Examples:
+ *   $base_url = 'http://www.example.com';
+ *   $base_url = 'http://www.example.com:8888';
+ *   $base_url = 'http://www.example.com/drupal';
+ *   $base_url = 'https://www.example.com:8888/drupal';
+ *
+ * It is not allowed to have a trailing slash; Drupal will add it
+ * for you.
+ */
+# $base_url = 'http://www.example.com';  // NO trailing slash!
+
+/**
  * PHP settings:
  *
  * To see what PHP settings are possible, including whether they can be set at
@@ -569,6 +502,30 @@ if ($settings['hash_salt']) {
  * Settings defined there should not be duplicated here so as to avoid conflict
  * issues.
  */
+
+/**
+ * Some distributions of Linux (most notably Debian) ship their PHP
+ * installations with garbage collection (gc) disabled. Since Drupal depends on
+ * PHP's garbage collection for clearing sessions, ensure that garbage
+ * collection occurs by using the most common settings.
+ */
+ini_set('session.gc_probability', 1);
+ini_set('session.gc_divisor', 100);
+
+/**
+ * Set session lifetime (in seconds), i.e. the time from the user's last visit
+ * to the active session may be deleted by the session garbage collector. When
+ * a session is deleted, authenticated users are logged out, and the contents
+ * of the user's $_SESSION variable is discarded.
+ */
+ini_set('session.gc_maxlifetime', 200000);
+
+/**
+ * Set session cookie lifetime (in seconds), i.e. the time from the session is
+ * created to the cookie expires, i.e. when the browser is expected to discard
+ * the cookie. The value 0 means "until the browser is closed".
+ */
+ini_set('session.cookie_lifetime', 2000000);
 
 /**
  * If you encounter a situation where users post a large amount of text, and
@@ -582,15 +539,22 @@ if ($settings['hash_salt']) {
 # ini_set('pcre.recursion_limit', 200000);
 
 /**
+ * Drupal automatically generates a unique session cookie name for each site
+ * based on its full domain name. If you have multiple domains pointing at the
+ * same Drupal site, you can either redirect them all to a single domain (see
+ * comment in .htaccess), or uncomment the line below and specify their shared
+ * base domain. Doing so assures that users remain logged in as they cross
+ * between your various domains. Make sure to always start the $cookie_domain
+ * with a leading dot, as per RFC 2109.
+ */
+# $cookie_domain = '.example.com';
+
+/**
  * Active configuration settings.
  *
  * By default, the active configuration is stored in the database in the
  * {config} table. To use a different storage mechanism for the active
  * configuration, do the following prior to installing:
- * - Create an "active" directory and declare its path in $config_directories
- *   as explained under the 'Location of the site configuration files' section
- *   above in this file. To enhance security, you can declare a path that is
- *   outside your document root.
  * - Override the 'bootstrap_config_storage' setting here. It must be set to a
  *   callable that returns an object that implements
  *   \Drupal\Core\Config\StorageInterface.
@@ -609,22 +573,26 @@ if ($settings['hash_salt']) {
  * the default settings.php.
  *
  * Note that any values you provide in these variable overrides will not be
- * viewable from the Drupal administration interface. The administration
- * interface displays the values stored in configuration so that you can stage
- * changes to other environments that don't have the overrides.
- *
- * There are particular configuration values that are risky to override. For
- * example, overriding the list of installed modules in 'core.extension' is not
- * supported as module install or uninstall has not occurred. Other examples
- * include field storage configuration, because it has effects on database
- * structure, and 'core.menu.static_menu_link_overrides' since this is cached in
- * a way that is not config override aware. Also, note that changing
- * configuration values in settings.php will not fire any of the configuration
- * change events.
+ * modifiable from the Drupal administration interface.
  */
 # $config['system.site']['name'] = 'My Drupal site';
 # $config['system.theme']['default'] = 'stark';
 # $config['user.settings']['anonymous'] = 'Visitor';
+
+/**
+ * CSS/JS aggregated file gzip compression:
+ *
+ * By default, when CSS or JS aggregation and clean URLs are enabled Drupal will
+ * store a gzip compressed (.gz) copy of the aggregated files. If this file is
+ * available then rewrite rules in the default .htaccess file will serve these
+ * files to browsers that accept gzip encoded content. This allows pages to load
+ * faster for these users and has minimal impact on server load. If you are
+ * using a webserver other than Apache httpd, or a caching reverse proxy that is
+ * configured to cache and compress these files itself you may want to uncomment
+ * one or both of the below lines, which will prevent gzip files being stored.
+ */
+# $config['system.performance']['css']['gzip'] = FALSE;
+# $config['system.performance']['js']['gzip'] = FALSE;
 
 /**
  * Fast 404 pages:
@@ -635,74 +603,22 @@ if ($settings['hash_salt']) {
  *
  * The options below return a simple, fast 404 page for URLs matching a
  * specific pattern:
- * - $config['system.performance']['fast_404']['exclude_paths']: A regular
+ * - $conf['system.performance]['fast_404']['exclude_paths']: A regular
  *   expression to match paths to exclude, such as images generated by image
- *   styles, or dynamically-resized images. The default pattern provided below
- *   also excludes the private file system. If you need to add more paths, you
+ *   styles, or dynamically-resized images. If you need to add more paths, you
  *   can add '|path' to the expression.
- * - $config['system.performance']['fast_404']['paths']: A regular expression to
+ * - $conf['system.performance]['fast_404']['paths']: A regular expression to
  *   match paths that should return a simple 404 page, rather than the fully
  *   themed 404 page. If you don't have any aliases ending in htm or html you
  *   can add '|s?html?' to the expression.
- * - $config['system.performance']['fast_404']['html']: The html to return for
+ * - $conf['system.performance]['fast_404']['html']: The html to return for
  *   simple 404 pages.
  *
  * Remove the leading hash signs if you would like to alter this functionality.
  */
-# $config['system.performance']['fast_404']['exclude_paths'] = '/\/(?:styles)|(?:system\/files)\//';
+# $config['system.performance']['fast_404']['exclude_paths'] = '/\/(?:styles)\//';
 # $config['system.performance']['fast_404']['paths'] = '/\.(?:txt|png|gif|jpe?g|css|js|ico|swf|flv|cgi|bat|pl|dll|exe|asp)$/i';
 # $config['system.performance']['fast_404']['html'] = '<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL "@path" was not found on this server.</p></body></html>';
-
-/**
- * Load services definition file.
- */
-$settings['container_yamls'][] = __DIR__ . '/services.yml';
-
-/**
- * Override the default service container class.
- *
- * This is useful for example to trace the service container for performance
- * tracking purposes, for testing a service container with an error condition or
- * to test a service container that throws an exception.
- */
-# $settings['container_base_class'] = '\Drupal\Core\DependencyInjection\Container';
-
-/**
- * Trusted host configuration.
- *
- * Drupal core can use the Symfony trusted host mechanism to prevent HTTP Host
- * header spoofing.
- *
- * To enable the trusted host mechanism, you enable your allowable hosts
- * in $settings['trusted_host_patterns']. This should be an array of regular
- * expression patterns, without delimiters, representing the hosts you would
- * like to allow.
- *
- * For example:
- * @code
- * $settings['trusted_host_patterns'] = array(
- *   '^www\.example\.com$',
- * );
- * @endcode
- * will allow the site to only run from www.example.com.
- *
- * If you are running multisite, or if you are running your site from
- * different domain names (eg, you don't redirect http://www.example.com to
- * http://example.com), you should specify all of the host patterns that are
- * allowed by your site.
- *
- * For example:
- * @code
- * $settings['trusted_host_patterns'] = array(
- *   '^example\.com$',
- *   '^.+\.example\.com$',
- *   '^example\.org$',
- *   '^.+\.example\.org$',
- * );
- * @endcode
- * will allow the site to run off of all variants of example.com and
- * example.org, with all subdomains included.
- */
 
 /**
  * Load local development override configuration, if available.
