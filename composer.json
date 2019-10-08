@@ -7,7 +7,7 @@
         "drupal/core": "self.version"
     },
     "extra": {
-        "composer-scaffold": {
+        "drupal-scaffold": {
             "file-mapping": {
                 "[project-root]/.editorconfig": "assets/editorconfig",
                 "[project-root]/.gitattributes": "assets/gitattributes",
