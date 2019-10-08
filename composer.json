@@ -30,6 +30,7 @@
                 "[web-root]/profiles/README.txt": "assets/profiles.README.txt",
                 "[web-root]/sites/README.txt": "assets/sites.README.txt",
                 "[web-root]/themes/README.txt": "assets/themes.README.txt",
+                "[web-root]/INSTALL.txt": "assets/INSTALL.txt",
                 "[web-root]/README.txt": "assets/README.txt"
             }
         }
