@@ -1,0 +1,16 @@
+{
+    "name": "drupal/legacy-scaffold-assets",
+    "type": "library",
+    "description": "Scaffold assets from drupal/drupal; for use with versions 8.0.x - 8.7.x.",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "drupal/core": "self.version"
+    },
+    "extra": {
+        "drupal-scaffold": {
+            "allowed-packages": [
+                "drupal/core"
+            ]
+        }
+    }
+}
